@@ -37,6 +37,7 @@ To set up the project locally, follow these steps:
     ```bash
     pip install -r requirements.txt
     ```
+    *(Note: The `scanpy` library is required for dynamic normalization of gene counts within the Streamlit app.)*
 
 ## Usage
 
@@ -48,19 +49,20 @@ To run the Streamlit web application:
     streamlit run app.py
     ```
     The application will open in your default web browser.
+    *(Note: On its first run, the app will dynamically download raw data from Zenodo and generate normalized gene counts using `scanpy`. This process may take a few minutes.)*
 
 ## Project Structure
 
 *   `app.py`: The main Streamlit web application.
 *   `scripts/`: Contains various Python and R scripts used for data preprocessing, analysis, and model training.
-    *   `01_normalize.R`: R script for DESeq2 VST normalization.
+    *   `01_normalize.R`: R script for DESeq2 VST normalization (used for local data generation).
     *   `02_DEG_analysis.R`: R script for Differential Expression Analysis.
     *   `run_final_analysis.py`: Consolidated Python script for multi-class ML model training and evaluation.
     *   `07_shap_analysis.py`: Python script for SHAP interpretation.
     *   `01a_Advanced_PCA_Analysis.ipynb`: Jupyter notebook for advanced PCA.
     *   `tensorflow.ipynb`: Jupyter notebook for TensorFlow DNN (run on Google Colab).
-*   `data/`: Contains derived data files (e.g., `DEG_results.csv`, `volcano_plot.png`) and will dynamically download raw data from Zenodo.
-*   `requirements.txt`: Lists all Python dependencies.
+*   `data/`: This directory will be created by `app.py` at runtime. It will store downloaded raw data and dynamically generated normalized data. It also contains derived result files (e.g., `DEG_results.csv`, `volcano_plot.png`) that are part of the repository.
+*   `requirements.txt`: Lists all Python dependencies, including `scanpy`.
 *   `report.md`: The comprehensive project report.
 *   `GEMINI.md`: Internal project plan and notes.
 
