@@ -4,7 +4,8 @@ This repository contains the code for an interactive web application designed to
 
 The application is built with Streamlit, making the complex bioinformatics and machine learning pipeline accessible through a user-friendly interface.
 
-The web server is accessible on: https://xiyasong-ddls-project-app-k830az.streamlit.app/<img width="468" height="70" alt="image" src="https://github.com/user-attachments/assets/8bd0e24a-98c8-4a07-9db1-19c7d9cab962" />
+The web server is accessible on: https://xiyasong-ddls-project-app-k830az.streamlit.app/
+
 
 
 ## Features
