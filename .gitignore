@@ -1,9 +1,10 @@
-# data/
+# Ignore large, unzipped/generated data files
+data/gene_count_matrix.csv
+data/normalized_gene_counts.csv
+
+# Ignore RStudio and system files
 *.Rproj.user/
 .DS_Store
 .RData
 .Rhistory
-normalized_gene_counts.csv
-gene_count_matrix.csv
 DDLS_project_report.pdf
-final_history.json

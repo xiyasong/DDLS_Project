@@ -25,50 +25,34 @@ import requests
 import os
 import scanpy as sc # New import
 
+import zipfile
+
 # --- Data Loading (Cached) ---
 @st.cache_data
 def load_data():
     data_dir = 'data'
     os.makedirs(data_dir, exist_ok=True)
 
-    # Zenodo URLs for direct download
-    gene_matrix_url = "https://zenodo.org/record/7148045/files/gene_count_matrix.csv?download=1"
-    metadata_url = "https://zenodo.org/record/7148045/files/MAGE_metadata.txt?download=1"
-
-    gene_matrix_path = os.path.join(data_dir, 'gene_count_matrix.csv')
-    metadata_path = os.path.join(data_dir, 'MAGE_metadata.txt')
+    gene_matrix_zip_path = os.path.join(data_dir, 'gene_count_matrix.csv.zip')
+    gene_matrix_csv_path = os.path.join(data_dir, 'gene_count_matrix.csv')
+    metadata_path = os.path.join(data_dir, 'MAGE_metadata.txt') # Assuming this is in the repo
     normalized_gene_counts_path = os.path.join(data_dir, 'normalized_gene_counts.csv')
 
-    # Download gene count matrix if not exists
-    if not os.path.exists(gene_matrix_path):
-        st.info(f"Downloading {os.path.basename(gene_matrix_path)} from Zenodo...")
-        response = requests.get(gene_matrix_url, stream=True)
-        response.raise_for_status() # Raise an exception for HTTP errors
-        with open(gene_matrix_path, "wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-        st.success(f"Downloaded {os.path.basename(gene_matrix_path)}.")
-
-    # Download metadata if not exists
-    if not os.path.exists(metadata_path):
-        st.info(f"Downloading {os.path.basename(metadata_path)} from Zenodo...")
-        response = requests.get(metadata_url, stream=True)
-        response.raise_for_status()
-        with open(metadata_path, "wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-        st.success(f"Downloaded {os.path.basename(metadata_path)}.")
-
-    # Generate normalized_gene_counts.csv if not exists
+    # Decompress gene_count_matrix.csv if it doesn't exist but the zip file does
+    if not os.path.exists(gene_matrix_csv_path) and os.path.exists(gene_matrix_zip_path):
+        st.info(f"Decompressing {os.path.basename(gene_matrix_zip_path)}...")
+        with zipfile.ZipFile(gene_matrix_zip_path, 'r') as zip_ref:
+            zip_ref.extractall(data_dir)
+        st.success(f"Decompressed {os.path.basename(gene_matrix_zip_path)}.")
+    
+    # Generate normalized_gene_counts.csv if it doesn't exist
     if not os.path.exists(normalized_gene_counts_path):
         st.info(f"Generating {os.path.basename(normalized_gene_counts_path)} using scanpy VST-like normalization...")
-        raw_counts_df = pd.read_csv(gene_matrix_path, index_col=0)
+        raw_counts_df = pd.read_csv(gene_matrix_csv_path, index_col=0)
         
-        # Scanpy expects samples as rows, genes as columns. Our raw_counts_df has genes as rows, samples as columns.
-        # So, we transpose it first for scanpy processing, then transpose back for our app's X.
-        adata = sc.AnnData(raw_counts_df.T) 
-        sc.pp.normalize_total(adata, target_sum=1e4) # Normalize each cell to total counts over all genes
-        sc.pp.log1p(adata) # Log-transform the data (similar to VST for visualization/ML)
+        adata = sc.AnnData(raw_counts_df.T)
+        sc.pp.normalize_total(adata, target_sum=1e4)
+        sc.pp.log1p(adata)
         normalized_counts_df = pd.DataFrame(adata.X.T, index=raw_counts_df.index, columns=raw_counts_df.columns)
         normalized_counts_df.to_csv(normalized_gene_counts_path)
         st.success(f"Generated {os.path.basename(normalized_gene_counts_path)}.")
