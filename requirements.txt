@@ -8,3 +8,4 @@ shap==0.45.0
 mygene==3.2.2
 scanpy==1.10.1
 anndata>=0.9
+zarr<3
